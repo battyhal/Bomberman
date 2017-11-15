@@ -1,12 +1,26 @@
 #include "Juego.h"
 
-Juego::Juego() : bomba(NULL), Bomberman(NULL), mapa(Mapa()), salir(false), turnos(0)
+Juego::Juego():bomba(NULL), Bomberman(NULL), mapa(Mapa()), salir(false), turnos(0)
 {
 	//mapa.Dibujar_Marco();
 }
 
-Juego::Juego(std::string nivelTxt) : bomba(NULL), Bomberman(NULL), mapa(Mapa(nivelTxt)), 
+Juego::Juego(std::string nivelTxt):bomba(NULL), Bomberman(NULL), mapa(Mapa(nivelTxt)), 
 									 salir(false), turnos(0) {}
+
+Juego& Juego::operator=(const Juego& otro)
+{
+	if(this != &otro)
+	{
+		bomba = otro.bomba;
+		Bomberman = otro.Bomberman;
+		mapa = otro.mapa;
+		objetos = otro.objetos;
+		salir = otro.salir;
+		turnos = otro.turnos;
+	}
+	return *this;
+}
 
 Juego::~Juego() 
 {
@@ -20,6 +34,7 @@ Juego::~Juego()
 // GETTERS
 // ---------------------------------------------------------------
 bool Juego::Get_Salir() const { return salir; }
+std::list<Objeto*> Juego::Get_Objetos() const { return objetos; }
 
 // ---------------------------------------------------------------
 // MÉTODOS
@@ -32,9 +47,9 @@ void Juego::Actualizar()
 		bomba->Cuenta_Atras();
 	}*/
 	// Comprobar colisiones del jugador con Bombas y/o enemigos
-	for(Obj = objetos.begin(); Obj != objetos.end(); Obj++)
+	for(auto Obj = objetos.begin(); Obj != objetos.end(); Obj++)
 	{
-		for(Obj2 = Obj; Obj2 != objetos.end(); Obj2++)
+		for(auto Obj2 = Obj; Obj2 != objetos.end(); Obj2++)
 		{			
 			// Si hay 2 objetos en la misma posición
 			if((*Obj)->Get_X() == (*Obj2)->Get_X() && (*Obj)->Get_Y() == (*Obj2)->Get_Y())
@@ -122,12 +137,16 @@ void Juego::Game_Over()
 	}
 }
 
-bool Juego::Jugar()
+void Juego::Jugar()
 {
+	Auxiliar auxiliar;
+	auxiliar.lista_objetos_auxiliar = objetos;
+	auxiliar.mapa_auxiliar = mapa.Get_Matriz_Fija();
 	rlutil::hidecursor();
 	Puntuacion();
 	if(Bomberman->Get_Vidas() == 0)
 	{
+		mapa.Dibujar_Jugador_Muerto();
 		salir = true;
 	}
 	else
@@ -135,7 +154,8 @@ bool Juego::Jugar()
 		Mover_Personaje();
 		Mover_NPC();
 		Actualizar();
-		mapa.Dibujar_Mapa(objetos);
+		auxiliar.Dibujar_Mapa();
+		
 		Sleep(150);
 	}
 }
@@ -143,40 +163,13 @@ bool Juego::Jugar()
 void Juego::Mover_NPC()
 {
 	// Se empieza por el objeto[1] porque el objeto[0] es el jugador
-	for(Obj = objetos.begin(); Obj != objetos.end(); Obj++)
+	for(auto Obj = objetos.begin(); Obj != objetos.end(); Obj++)
 	{	
 		// Comprobar que el objeto no es una bomba
 		if((*Obj)->Get_Tag() != '@' && (*Obj)->Get_Tag() != 'B')
 		{
-			// Comprobar si la casilla está vacía
-			// Para ir hacia Abajo
-			if(mapa.Get_Contenido_Casilla((*Obj)->Get_X(), (*Obj)->Get_Y() + 1) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio
-				//(*Obj)->Mover(6, 0, 0); 
-			}
-			// Para ir hacia Arriba
-			else if(mapa.Get_Contenido_Casilla((*Obj)->Get_X(), (*Obj)->Get_Y() - 1) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio
-				//(*Obj)->Mover(6, 0, 0);
-			}
-			// Para ir hacia la Derecha
-			else if(mapa.Get_Contenido_Casilla((*Obj)->Get_X() + 1, (*Obj)->Get_Y()) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio				
-				//(*Obj)->Mover(6, 0, 0);
-			}
-			// Para ir hacia la Izquierda
-			else if(mapa.Get_Contenido_Casilla((*Obj)->Get_X() - 1, (*Obj)->Get_Y()) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio
-				//(*Obj)->Mover(6, 0, 0);
-			}
+			(*Obj)->Mover(6, mapa, Bomberman->Get_X(), Bomberman->Get_Y()); 
+				
 			if((*Obj)->Get_X() <= 0)
 				(*Obj)->Set_X(2);
 			if((*Obj)->Get_X() > mapa.Get_Ancho_Mapa() - 1)
@@ -208,12 +201,9 @@ void Juego::Mover_Personaje()
 			// Comprobar si la casilla a la que queremos ir está dentro del mapa
 			if(Bomberman->Get_Y() + 1 < mapa.Get_Alto_Mapa())
 			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X(), Bomberman->Get_Y() + 1) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(2, 0, 0);
-				}
+				// Mover personaje
+				Bomberman->Mover(2, mapa, 0, 0);
+				
 				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
 			}
 		}
@@ -223,12 +213,9 @@ void Juego::Mover_Personaje()
 			// Comprobar si la casilla a la que queremos ir está dentro del mapa
 			if(Bomberman->Get_Y() - 1 >= 0)
 			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X(), Bomberman->Get_Y() - 1) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(1, 0, 0);
-				}
+				// Mover personaje
+				Bomberman->Mover(1, mapa, 0, 0);
+				
 				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
 			}
 		}
@@ -237,13 +224,10 @@ void Juego::Mover_Personaje()
 		{
 			// Comprobar si la casilla a la que queremos ir está dentro del mapa
 			if(Bomberman->Get_X() - 1 >= 0)
-			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X() - 1, Bomberman->Get_Y()) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(3, 0, 0);
-				}
+			{			
+				// Mover personaje
+				Bomberman->Mover(3, mapa, 0, 0);
+				
 				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
 			}
 		}
@@ -253,12 +237,8 @@ void Juego::Mover_Personaje()
 			// Comprobar si la casilla a la que queremos ir está dentro del mapa
 			if(Bomberman->Get_X() + 1 < mapa.Get_Ancho_Mapa())
 			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X() + 1, Bomberman->Get_Y()) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(4, 0, 0);
-				}
+				// Mover personaje
+				Bomberman->Mover(4, mapa, 0, 0);
 				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
 			}
 		}
@@ -324,27 +304,3 @@ void Juego::Puntuacion()
 	std::cout << "Turnos = " << turnos;
 }
 
-// TEMPORAL
-void Juego::dibujarMapa()
-{
-	mapa.Dibujar_Mapa(objetos);
-}
-
-void Juego::verDatosObjetos()
-{
-	int contador = 0;
-	for(Obj = objetos.begin(); Obj != objetos.end(); )
-	{
-		std::cout << "Objeto[" << contador << "].Ataque    = " << (*Obj)->Get_Ataque() << "\n";
-		std::cout << "Objeto[" << contador << "].Defensa   = " << (*Obj)->Get_Defensa() << "\n";
-		std::cout << "Objeto[" << contador << "].Energia   = " << (*Obj)->Get_Energia() << "\n";
-		std::cout << "Objeto[" << contador << "].Nombre    = " << (*Obj)->Get_Nombre() << "\n";
-		std::cout << "Objeto[" << contador << "].Tag       = " << (*Obj)->Get_Tag() << "\n";
-		std::cout << "Objeto[" << contador << "].Vidas     = " << (*Obj)->Get_Vidas() << "\n";
-		std::cout << "Objeto[" << contador << "].X         = " << (*Obj)->Get_X() << "\n";
-		std::cout << "Objeto[" << contador << "].Y         = " << (*Obj)->Get_Y() << "\n";
-		
-		contador++;
-		Obj++;
-	}
-}

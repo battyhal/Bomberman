@@ -8,6 +8,7 @@
 class NPC : public Objeto {
 private:
 	std::vector<std::string> equipo;
+
 protected:
 public:
 	NPC();

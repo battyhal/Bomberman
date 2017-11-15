@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <list>
+#include "Auxiliar.h"
 #include "Bomba.h"
 #include "Mapa.h"
 #include "NPC.h"
@@ -11,13 +12,12 @@
 #include "rlutil.h"
 
 class Juego {
+friend class Auxiliar;
 private:
 	Bomba* bomba;
 	Personaje* Bomberman;
 	Mapa mapa;
 	std::list<Objeto*> objetos;
-	std::list<Objeto*>::iterator Obj;
-	std::list<Objeto*>::iterator Obj2;
 	bool salir;
 	int  turnos;
 	
@@ -25,27 +25,27 @@ protected:
 public:
 	Juego();
 	Juego(std::string nivelTxt);
+	Juego& operator=(const Juego& otro);
 	~Juego();
 
 	// GETTERS
 	bool Get_Salir() const;
+	std::list<Objeto*> Get_Objetos() const;
+	
+	// SETTERS
 
-	// MÈTODOS
+	// MÉTODOS
 	void Actualizar();
 	void Crear_Objetos();
 	void Game_Over();
-	bool Jugar();
+	void Jugar();
 	void Mover_NPC();
 	void Mover_Personaje();
 	void Muerto();
 
 	void Presentacion();
 	void Puntuacion();
-	
-	// TEMPORAL
-	void dibujarMapa();
-	void verDatosObjetos();
-	
+		
 };
 
 #endif

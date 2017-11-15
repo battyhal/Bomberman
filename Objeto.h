@@ -6,6 +6,8 @@
 #include <math.h>
 #include <random>
 #include <string>
+#include <vector>
+#include "Mapa.h"
 
 class Objeto {
 private:
@@ -18,6 +20,7 @@ protected:
 	int  vidas;
 	int  x;
 	int  y;
+	
 public:
 	Objeto();
 	Objeto(int _ataque, int _defensa, int _energia, std::string _nombre,
@@ -44,9 +47,9 @@ public:
 	void Set_Y(int i);
 	
 	// MÉTODOS
-	virtual int  Cuenta_Atras();
-	void Mover(int i, int _x, int _y);
-	void Perseguir(int _x, int _y);
+	virtual int Cuenta_Atras();
+	void Mover(int i, Mapa& mapa, int _x, int _y);
+
 };
 
 #endif

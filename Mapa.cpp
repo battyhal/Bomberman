@@ -4,7 +4,7 @@ Mapa::Mapa()
 {
 	//  Como un array 2D se almacena en la memoria del ordenador como un array 1D 
 	//  se puede declarar igualmente de la forma " char matriz[alto * ancho] "
-	//  y se sigue la fórmula " y * ANCHO + x " para llegar a la casilla x, y 	  
+	//  y se sigue la fórmula " x * ANCHO + y " para llegar a la casilla x, y 	  
 	for(int j = 0; j < ANCHO; j++)
 	{
 		for(int k = 0; k < ALTO; k++)
@@ -12,8 +12,8 @@ Mapa::Mapa()
 			/*if(j % 2 != 0 && k % 2 != 0)
 				matrizFija[k * ANCHO + j] = Adobe;*/
 			if(j % 3 != 0 && k % 3 != 0)
-				matrizFija[k * ANCHO + j] = Adobe;
-			else matrizFija[k * ANCHO + j] = ' ';
+				matrizFija[j * ALTO + k] = Casilla(Adobe, true, false, j, k);
+			else matrizFija[j * ALTO + k] = Casilla(' ', true, false, j, k);
 		}
 	}
 	// Se iguala a NULL porque no se va a utilizar
@@ -25,11 +25,12 @@ Mapa::Mapa()
 Mapa::Mapa(std::string archivoTxt)
 {
 	// Se inicializa a ' ' porque no se va a utilizar 
+	Casilla casilla_vacia;
 	for(int j = 0; j < ANCHO; j++)
 	{
 		for(int k = 0; k < ALTO; k++)
 		{
-			matrizFija[k * ANCHO + j] = ' ';
+			matrizFija[j * ALTO + k] = casilla_vacia;
 		}
 	}
 	// Se crea el flujo de apertura de archivo
@@ -62,9 +63,31 @@ Mapa::Mapa(std::string archivoTxt)
 	}
 	// La longitud debe ser igual a la de cadena2 + 1 caracter para almacenar el último '\n'
 	int longitud = cadena2.length() + 1;
-	matrizDinamica = new char[longitud];
+	matrizDinamica = new Casilla[longitud];
 	// strncpy se usa para copiar el contenido de cadena2 en matrizDinamica
-	strncpy(matrizDinamica, cadena2.c_str(), longitud);
+	//(matrizDinamica, cadena2.c_str(), longitud);
+}
+
+Mapa& Mapa::operator=(const Mapa& otro)
+{
+	if(this != &otro)
+	{
+		altoMatrizDinamica  = otro.altoMatrizDinamica;
+		anchoMatrizDinamica = otro.altoMatrizDinamica;
+		matrizDinamica = otro.matrizDinamica;  
+		
+		for(int j = 0; j < ANCHO; j++)
+		{
+			for(int k = 0; k < ALTO; k++)
+			{
+				matrizFija[j * ALTO + k] = otro.matrizFija[j * ALTO + k];	
+			}
+		}
+		
+		ruta = otro.ruta;
+		visitadas = otro.visitadas;
+	}
+	return *this;
 }
 
 Mapa::~Mapa(){ delete[] matrizDinamica; }
@@ -72,130 +95,172 @@ Mapa::~Mapa(){ delete[] matrizDinamica; }
 // ---------------------------------------------------------------
 // GETTERS
 // ---------------------------------------------------------------
-int Mapa::Get_Ancho_Mapa()
+int  Mapa::Get_Ancho_Mapa()
 { 
 	if(matrizDinamica == NULL)
 		return ANCHO; 
 	else return anchoMatrizDinamica; 
 }
-int Mapa::Get_Alto_Mapa()
+
+int  Mapa::Get_Alto_Mapa()
 { 
 	if(matrizDinamica == NULL)
 		return ALTO; 
 	else return altoMatrizDinamica; 
 }
+
 char Mapa::Get_Contenido_Casilla(int x, int y) 
 { 
 	if(matrizDinamica == NULL)
-		return matrizFija[y * ANCHO + x]; 
-	else return matrizDinamica[y * anchoMatrizDinamica + x];
+		return matrizFija[x * ALTO + y].Get_Contenido(); 
+	else return matrizDinamica[x * anchoMatrizDinamica + y].Get_Contenido();
 }
 
+Casilla* Mapa::Get_Matriz_Fija(){ return matrizFija; } 
 // ---------------------------------------------------------------
 // SETTERS
 // ---------------------------------------------------------------
 void Mapa::Set_Casilla(int x, int y, char c)
 {
 	if(matrizDinamica == NULL)
-		matrizFija[y * ANCHO + x] = c;
-	else matrizDinamica[y * anchoMatrizDinamica + x] = c;
+		matrizFija[x * ALTO + y].Set_Contenido(c);
+	else matrizDinamica[x * anchoMatrizDinamica + y].Set_Contenido(c);
 }
 
 // ---------------------------------------------------------------
 // MÉTODOS
 // ---------------------------------------------------------------
+// Si Backtracking devuelve -1 es que no ha encontrado un camino
+int Mapa::Backtracking(Casilla& origen, Casilla& destino)
+{
+	// Casilla temporal 
+	Casilla temp;
+	
+	// Comprobar casillas adyacentes a la de salida (origen)
+	temp = Buscar_Adyacentes(origen, destino);
+	
+	// Si temp.X y temp.Y = -1 quiere decir que no se han encontrado casillas
+	// adyacentes libres y no visitadas y se acaba la función devolviendo -1 
+	//if(temp[0] == -1 || temp[1] == -1)
+		//return -1;
+	
+	// Si se encuentra una casilla válida se incluye en la lista de casillas
+	// 'ruta' de la clase casilla 
+	//matrizFija[x * ANCHO + y].Incluir_Casilla(temp);
+	// En caso contrario se mueve a la primera casilla libre. 
+	
+	// Comprobar casillas adyacentes a la nueva Casilla
+	
+	// Moverse a la primera libre
+	
+	// En caso de no haber casillas adyacentes libres no visitadas se 
+	// va hacia atrás hasta encontrar una que las tenga. En caso de no 
+	// haber se devuelve -1 que indica que no hay camino disponible
+	int pasos = 0;
+	int resultado = 0;
+	
+	return 0;
+}
+
+Casilla Mapa::Buscar_Adyacentes(Casilla& origen, Casilla& destino)
+{
+	// Casilla temporal para almacenar las coordenadas si se encuentra una adyacente válida
+	Casilla temporal;
+	temporal.Set_X(-1);
+	temporal.Set_Y(-1);
+	// Primero se comprueba que la casilla inspeccionada no es la meta
+	/*if(matrizFija[(y - 1) * ANCHO + x].Get_X() != destino.Get_X() &&
+	   matrizFija[(y - 1) * ANCHO + x].Get_Y() != destino.Get_Y())
+	{
+		// Buscar si la casilla de ARRIBA no contiene obstáculo y no ha sido visitada
+		if(matrizFija[(y - 1) * ANCHO + x].Get_Contenido() == ' ' && 
+		   matrizFija[(y - 1) * ANCHO + x].Get_Visitada() == false)
+		{
+			temporal.Set_X(matrizFija[(y - 1) * ANCHO + x].Get_X());
+			temporal.Set_Y(matrizFija[(y - 1) * ANCHO + x].Get_Y());
+		}
+	}
+	// Y si es la meta se devuelven las coordenadas destino X y destino Y
+	else 
+	{
+		temporal.Set_X(destino.Get_X());
+		temporal.Set_Y(destino.Get_Y());
+	}
+	
+	if(matrizFija[(y + 1) * ANCHO + x].Get_X() != destino.Get_X() &&
+	   matrizFija[(y + 1) * ANCHO + x].Get_Y() != destino.Get_Y())
+	{
+		// Buscar si la casilla de ABAJO no contiene obstáculo y no ha sido visitada
+		if(matrizFija[(y + 1) * ANCHO + x].Get_Contenido() == ' ' && 
+		   matrizFija[(y + 1) * ANCHO + x].Get_Visitada() == false)
+		{
+			temporal.Set_X(matrizFija[(y + 1) * ANCHO + x].Get_X());
+			temporal.Set_Y(matrizFija[(y + 1) * ANCHO + x].Get_Y());
+		}
+	}
+	else 
+	{
+	   temporal.Set_X(destino.Get_X());
+	   temporal.Set_Y(destino.Get_Y());
+	}
+	
+	if(matrizFija[y * ANCHO + (x + 1)].Get_X() != destino.Get_X() &&
+	   matrizFija[y * ANCHO + (x + 1)].Get_Y() != destino.Get_Y())
+	{
+		// Buscar si la casilla de la DERECHA no contiene obstáculo y no ha sido visitada
+		if(matrizFija[y * ANCHO + (x + 1)].Get_Contenido() == ' ' && 
+		   matrizFija[y * ANCHO + (x + 1)].Get_Visitada() == false)
+		{
+			temporal.Set_X(matrizFija[y * ANCHO + (x + 1)].Get_X());
+			temporal.Set_Y(matrizFija[y * ANCHO + (x + 1)].Get_Y());
+		}
+	}
+	else 
+	{
+	   temporal.Set_X(destino.Get_X());
+	   temporal.Set_Y(destino.Get_Y());
+	}
+	
+	if(matrizFija[y * ANCHO + (x - 1)].Get_X() != destino.Get_X() &&
+	   matrizFija[y * ANCHO + (x - 1)].Get_Y() != destino.Get_Y())
+	{
+		// Buscar si la casilla de la IZQUIERDA no contiene obstáculo y no ha sido visitada
+		if(matrizFija[y * ANCHO + (x - 1)].Get_Contenido() == ' ' && 
+		   matrizFija[y * ANCHO + (x - 1)].Get_Visitada() == false)
+		{
+			temporal.Set_X(matrizFija[y * ANCHO + (x - 1)].Get_X());
+			temporal.Set_Y(matrizFija[y * ANCHO + (x - 1)].Get_Y());
+		}
+	}
+	else 
+	{
+		temporal.Set_X(destino.Get_X());
+		temporal.Set_Y(destino.Get_Y());
+	}*/
+   
+	return temporal;
+}
+
 void Mapa::Dibujar_Jugador_Muerto()
 {
-	char muerto[9][47] = {
-		"                                              ",
-			" *     *  *   *  ******  *****  *******  *****",
-			" * * * *  *   *  *       *   *     *     *   *",
-			" *  *  *  *   *  *       *   *     *     *   *",
-			" *     *  *   *  ***     * **      *     *   *",
-			" *     *  *   *  *       *  *      *     *   *",
-			" *     *   ***   ******  *   *     *     *****",
-			"                                              ",
+	char muerto[9][48] = {
+	"                                               ",
+	" *     *  *   *  ******  *****  *******  ***** ",
+	" * * * *  *   *  *       *   *     *     *   * ",
+	" *  *  *  *   *  *       *   *     *     *   * ",
+	" *     *  *   *  ***     * **      *     *   * ",
+	" *     *  *   *  *       *  *      *     *   * ",
+	" *     *   ***   ******  *   *     *     ***** ",
+	"                                               ",
 	};
 	for(int j = 0; j < 9; j++)
 	{
-		for(int k = 0; k < 47; k++)
+		for(int k = 0; k < 48; k++)
 		{
 			std::cout << muerto[j][k];
 		}
 		std::cout << "\n";
 	}
-}
-
-void Mapa::Dibujar_Mapa(std::list<Objeto*>& o)
-{
-	if(matrizDinamica == NULL)
-	{
-		// Dibujar contenido matriz fija
-		gotoxy(20, 3);
-		for(int j = 0; j < ALTO; j++)
-		{
-			for(int k = 0; k < ANCHO; k++)
-			{
-				bool dibujado = false;
-				for(std::list<Objeto*>::iterator it = o.begin(); !dibujado && it != o.end(); it++)
-				{
-					if((*it)->Get_X() == k && (*it)->Get_Y() == j)
-					{
-						// Si Bomberman está muerto 
-						if((*it)->Get_Nombre() == "Bomberman")
-						{
-							if((*it)->Get_Vidas() == 0)
-								Dibujar_Jugador_Muerto();
-						}
-						// Si hay una bomba dibuja siempre la bomba 
-						if((*it)->Get_Nombre() == "Bomba")
-							std::cout << '@';
-						else std::cout << (*it)->Get_Tag();
-						dibujado = true;
-					}
-				}
-				if(!dibujado)
-				{
-					std::cout << matrizFija[j * ANCHO + k];										
-				}
-			}
-			gotoxy(20, j + 4);
-		}			
-	}
-	else 
-	{
-		// Dibujar contenido matriz dinámica
-		gotoxy(20, 3);
-		for(int j = 0; j < altoMatrizDinamica; j++)
-		{
-			for(int k = 0; k < anchoMatrizDinamica; k++)
-			{
-				bool dibujado = false;
-				for(std::list<Objeto*>::iterator it = o.begin(); !dibujado && it != o.end(); it++)
-				{
-					if((*it)->Get_X() == k && (*it)->Get_Y() == j)
-					{
-						// Si Bomberman está muerto 
-						if((*it)->Get_Nombre() == "Bomberman")
-						{
-							if((*it)->Get_Vidas() == 0)
-								Dibujar_Jugador_Muerto();
-						}
-						// Si hay una bomba dibuja siempre la bomba 
-						if((*it)->Get_Nombre() == "Bomba")
-							std::cout << '@';
-						else std::cout << (*it)->Get_Tag();
-						dibujado = true;
-					}
-				}
-				if(!dibujado)
-				{
-					std::cout << matrizDinamica[j * anchoMatrizDinamica + k];										
-				}
-			}
-			//gotoxy(20, j + 4);
-		}
-	}	
 }
 
 void Mapa::Dibujar_Marco()
@@ -213,8 +278,7 @@ void Mapa::Dibujar_Marco()
 		gotoxy(4, l + 5);
 	}
 }
-
-
+	   
 ////******* FUNCIONES PARA CARGAR DATOS DE UN FICHERO DE TEXTO **********////
 /*std::vector<std::string> levelData;
 void loadData(std::string fileName)

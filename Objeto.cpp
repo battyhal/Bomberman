@@ -1,7 +1,9 @@
 #include "Objeto.h"
 
 Objeto::Objeto() : ataque(0), defensa(0), energia(0), nombre(" "), tag(' '), vidas(0), x(0), y(0) {}
-Objeto::Objeto(int _ataque, int _defensa, int _energia, std::string _nombre, char _tag, int _vidas, int _x, int _y) : ataque(_ataque), defensa(_defensa), energia(_energia), nombre(_nombre), tag(_tag), vidas(_vidas), x(_x), y(_y) {}
+Objeto::Objeto(int _ataque, int _defensa, int _energia, std::string _nombre, char _tag, 
+			   int _vidas, int _x, int _y) : ataque(_ataque), defensa(_defensa), energia(_energia),
+			   nombre(_nombre), tag(_tag), vidas(_vidas), x(_x), y(_y) {}
 Objeto::~Objeto() {}
 
 // ---------------------------------------------------------------
@@ -30,124 +32,137 @@ void Objeto::Set_Y(int i)       { y = i; }
 // ---------------------------------------------------------------
 // MÉTODOS
 // ---------------------------------------------------------------
-int  Objeto::Cuenta_Atras() {}
-void Objeto::Mover(int i, int _x, int _y)
+int  Objeto::Cuenta_Atras() { return 0; }
+void Objeto::Mover(int i, Mapa& mapa, int _x, int _y)
 {
 	switch(i)
 	{
-	case 1:
+	case 1: // ARRIBA 
 	{
-		y--; // Arriba
+		// Si casilla no está ocupada
+		if(mapa.Get_Contenido_Casilla(x, y - 1) == ' ')
+		{
+			y--; 
+		}
 	}
 	break;
-	case 2:
+	case 2: // ABAJO
 	{
-		y++; // Abajo
+		// Si casilla no está ocupada
+		if(mapa.Get_Contenido_Casilla(x, y + 1) == ' ')
+		{
+			y++; 
+		}
 	}
 	break;
-	case 3:
+	case 3: // IZQUIERDA
 	{
-		x--; // Izquierda
+		// Si casilla no está ocupada
+		if(mapa.Get_Contenido_Casilla(x - 1, y) == ' ')
+		{
+			x--; 
+		}
 	}
 	break;
-	case 4:
+	case 4: // DERECHA 
 	{
-		x++; // Derecha
+		// Si casilla no está ocupada
+		if(mapa.Get_Contenido_Casilla(x + 1, y) == ' ')
+		{
+			x++; 
+		}
 	}
 	break;
-	case 5:
-	{
-		Perseguir(_x, _y);
-	}
-	break;
-	case 6:
+	case 5: // ALEATORIO
 	{
 		int max = 4;
 		int min = 1;
 		int aleatorio = rand() % (max - min) + min;
-		Mover(aleatorio, _x, _y);
+		Mover(aleatorio, mapa, _x, _y);
+	}
+	break;
+	case 6: // PERSEGUIR
+	{
+		int max = 100;
+		int min = 0;
+		int aleatorio = rand() % (max - min) + min;
+		
+		// Teorema de Pitágoras 
+		float campo_vision = sqrt(pow(x - _x, 2) + pow(y - _y, 2));
+		
+		// Si el campo de visión es menor o igual a 3 el NPC persigue al Objeto
+		if(campo_vision <= 3)
+		{
+			if(y > _y)
+			{
+				// Objeto está a la izquierda
+				if(x > _x)
+				{
+					if(aleatorio <= 50)
+					{
+						Mover(1, mapa, _x, _y); // Arriba
+					}
+					else Mover(3, mapa, _x, _y); // Izquierda
+				}
+				// Objeto está hacia la derecha
+				else if(x < _x)
+				{
+					if(aleatorio <= 50)
+					{
+						Mover(1, mapa, _x, _y); // Arriba
+					}
+					else Mover(4, mapa, _x, _y); // Derecha
+					
+				}
+				// Objeto está en la misma columna
+				else 
+				{
+					Mover(1, mapa, _x, _y); // Arriba
+				}
+			}
+			else if(y < _y)
+			{
+				// Objeto está a la izquierda
+				if(x > _x)
+				{				
+					if(aleatorio <= 50)
+					{
+						Mover(2, mapa, _x, _y); // Abajo
+					}
+					else Mover(3,mapa, _x, _y); // Izquierda
+				}
+				// Objeto está hacia la derecha
+				else if(x < _x)
+				{
+					if(aleatorio <= 50)
+					{
+						Mover(2, mapa, _x, _y); // Abajo
+					}
+					else Mover(4, mapa, _x, _y); // Derecha
+				}
+				// Objeto está en la misma columna
+				else 
+				{
+					Mover(2, mapa, _x, _y); // Abajo
+				}
+			}
+			else if(y == _y)
+			{
+				if(x > _x)
+				{
+					Mover(3, mapa, _x, _y); // Izquierda
+				}
+				else if(x < _x)
+				{
+					Mover(4,mapa, _x, _y); // Derecha
+				}
+			}
+		} // Fin if(campo_vision)
+		// Y si el campo de visión es mayor que 3 el NPC se mueve aleatoriamente
+		else Mover(5, mapa, _x, _y);
 	}
 	break;
 	} // Fin switch
-}
-void Objeto::Perseguir(int _x, int _y)
-{
-	int max = 100;
-	int min = 0;
-	int aleatorio = rand() % (max - min) + min;
-	
-	// Teorema de Pitágoras 
-	float campo_vision = sqrt(pow(x - _x, 2) + pow(y - _y, 2));
-	
-	// Si el campo de visión es menor o igual a 3 el NPC persigue al Objeto
-	if(campo_vision <= 3)
-	{
-		if(y > _y)
-		{
-			// Objeto está a la izquierda
-			if(x > _x)
-			{
-				if(aleatorio <= 50)
-				{
-					Mover(1, _x, _y); // Arriba
-				}
-				else Mover(3, _x, _y); // Izquierda
-			}
-			// Objeto está hacia la derecha
-			else if(x < _x)
-			{
-				if(aleatorio <= 50)
-				{
-					Mover(1, _x, _y); // Arriba
-				}
-				else Mover(4, _x, _y); // Derecha
-			}
-			// Objeto está en la misma columna
-			else 
-			{
-				Mover(1, _x, _y); // Arriba
-			}
-		}
-		else if(y < _y)
-		{
-			// Objeto está a la izquierda
-			if(x > _x)
-			{				
-				if(aleatorio <= 50)
-				{
-					Mover(2, _x, _y); // Abajo
-				}
-				else Mover(3, _x, _y); // Izquierda
-			}
-			// Objeto está hacia la derecha
-			else if(x < _x)
-			{
-				if(aleatorio <= 50)
-				{
-					Mover(2, _x, _y); // Abajo
-				}
-				else Mover(4, _x, _y); // Derecha
-			}
-			// Objeto está en la misma columna
-			else 
-			{
-				Mover(2, _x, _y); // Abajo
-			}
-		}
-		else if(y == _y)
-		{
-			if(x > _x)
-			{
-				Mover(3, _x, _y); // Izquierda
-			}
-			else if(x < _x)
-			{
-				Mover(4, _x, _y); // Derecha
-			}
-		}
-	} // Fin if(campo_vision)
-	// Y si el campo de visión es mayor que 3 el NPC se mueve aleatoriamente
-	else Mover(6, _x, _y);
 }
 
 /*
@@ -220,9 +235,6 @@ Ejemplo 3. El enemigo tiene obstáculos sencillos
 
 	PROBLEMA: Si tiene un obstáculo complejo se puede quedar atrapado
 
-
-
-
 Ejemplo 4. El enemigo tiene obstáculos complejos
 
 	0  1  2  3  4  5  6  7  8  9
@@ -242,7 +254,7 @@ Ejemplo 4. El enemigo tiene obstáculos complejos
 	disponibles.
 
 	Para optimizar esto habrá que tener en cuenta alguna condición que nos permita cribar cuáles son
-	las posiciones más óptimas para utilizar. Además, esto lo podemos hacer cuando se encuentre con
+	las posiciones óptimas para utilizar. Además, esto lo podemos hacer cuando se encuentre con
 	obstáculos o siempre. 
 
 	Tenemos que tener en cuenta que sabemos dónde está el jugador siempre. 
@@ -252,7 +264,7 @@ Ejemplo 4. El enemigo tiene obstáculos complejos
 	visitadas. Así cribaremos por cada ramificación y no caminaremos sobre nuestros pasos.
 
 	Vamos a tener que utilizar funciones recursivas para poder hacer esto. El objetivo es que una 
-	función recursiva haga llamadas sucesivas a si misma hasta que completemos un árbol de opciones.
+	función recursiva haga llamadas sucesivas a sí misma hasta que completemos un árbol de opciones.
 	Tendremos que obtener de este árbol el camino solución que es el que nos lleva al jugador. Si
 	hay varios caminos directamente cogeremos el que menos saltos tenga.
 
@@ -260,7 +272,6 @@ Ejemplo 4. El enemigo tiene obstáculos complejos
 	las que hemos visitado ya. Así nos evitaremos volver sobre nuestros pasos y además obtendremos
 	una manera rápida de comprobar el estado de las casillas sin necesidad de recorrer el árbol 
 	hacia atrás.
-
 
 	Una opción para ver cuándo finalizar una rama es partir de que no vemos más allá de esa rama.
 
@@ -301,7 +312,6 @@ Ejemplo 4. El enemigo tiene obstáculos complejos
 							5:4 [JUGADOR]
 
 
-
 		   0  1  2  3  4  5  6  7  8  9
 		0 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
 		1 [ ][N][ ][ ][ ][ ][ ][ ][ ][ ]
@@ -329,7 +339,6 @@ Ejemplo 4. El enemigo tiene obstáculos complejos
 			- Patrullo aleatoriamente
 			o
 			- Me quedo quieto que se está cómodo
-
 
 
 	A -> B 

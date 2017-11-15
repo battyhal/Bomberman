@@ -7,7 +7,9 @@ Personaje::Personaje() : Objeto()
 	puntos = 0;
 }
 
-Personaje::Personaje(int _ataque, int _defensa, int _energia, std::string _nombre, char _tag, int _vidas, int _x, int _y, int _puntos, std::string _equipo) : Objeto(_ataque, _defensa, _energia, _nombre, _tag, _vidas, _x, _y)
+Personaje::Personaje(int _ataque, int _defensa, int _energia, std::string _nombre, char _tag, 
+					 int _vidas, int _x, int _y, int _puntos, std::string _equipo) 
+					: Objeto(_ataque, _defensa, _energia, _nombre, _tag, _vidas, _x, _y)
 {
 	bomba = NULL;
 	equipo.push_back(_equipo);
@@ -46,7 +48,7 @@ void Personaje::Mostrar_Equipo(int i)
 {
 	if(i == 0)
 	{
-		for(int j = 0; j < equipo.size(); j++)
+		for(unsigned int j = 0; j < equipo.size(); j++)
 		{
 			std::cout << " " << j << ".- " << equipo[j] << std::endl;  
 		}
