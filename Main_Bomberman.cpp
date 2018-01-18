@@ -1,25 +1,34 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <windows.h>
-#include "Constantes.h"
+#include <list>
+//#include <windows.h>
+//#include "Auxiliar.h"
+//#include "Constantes.h"
 #include "Juego.h"
-
-using namespace std;
+//#include "Nodo.h"
+//#include "Mapa.h"
+//#include "Objeto.h"
+//#include "Personaje.h"
+//#include "Atacar.h"
+//#include "Estado.h"
+//#include "Patrullar.h"
 
 int main (int argc, char *argv[]) {
-	
+
 	srand(time(NULL));
-	std::random_device r;
-	Juego rol;//("Columnas.txt");
-	rol.Crear_Objetos();
+	//std::random_device r;
+	rlutil::hidecursor();
+	ElJuego::Get_Instancia()->Actualiza_Estado();
 	
+	/*rol.Crear_Objetos();
+	rol.Actualizar_Estado();
 	while(!rol.Get_Salir())
 	{
 		rol.Jugar();
 	}
-	rlutil::showcursor();
-	
+	rlutil::showcursor();*/
+
 	return 0;
 }
 

@@ -3,50 +3,76 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <list>
 #include <math.h>
 #include <random>
 #include <string>
+#include "Nodo.h"
+#include "Mapa.h"
+#include "Mensaje.h""
 
-class Objeto {
+class Objeto
+{
 private:
 protected:
-	int  ataque;
-	int  defensa;
-	int  energia;
-	std::string nombre;
-	char tag;
-	int  vidas;
-	int  x;
-	int  y;
+		int ataque_;
+		int defensa_;
+		int energia_;
+		std::string nombre_;
+		std::list<Nodo*> ruta_;
+		char tag_;
+		std::string tono_;
+		int vidas_;
+		int x_;
+		int y_;
+
 public:
-	Objeto();
-	Objeto(int _ataque, int _defensa, int _energia, std::string _nombre,
-		   char _tag, int _vidas, int _x, int _y);
-	virtual ~Objeto();
-	
-	// Getters
-	int  Get_Ataque();
-	int  Get_Defensa();
-	int  Get_Energia();
-	std::string Get_Nombre();
-	char Get_Tag();
-	int  Get_Vidas();
-	int  Get_X();
-	int  Get_Y();
-	
-	// Setters
-	void Set_Ataque(int i);
-	void Set_Defensa(int i);
-	void Set_Energia(int i);
-	void Set_Tag(char c);
-	void Set_Vidas(int i);
-	void Set_X(int i);
-	void Set_Y(int i);
-	
+		Objeto();
+		Objeto(int, int, int, std::string, char, std::string, int, int, int);
+		virtual ~Objeto();
+
+	// ===================================================================================
+	// GETTERS
+	// ===================================================================================
+		int  Get_Ataque();
+		int  Get_Defensa();
+		int  Get_Energia();
+		std::string Get_Nombre();
+		char Get_Tag();
+		int  Get_Tono();
+		int  Get_Vidas();
+		int  Get_X();
+		int  Get_Y();
+
+	// ===================================================================================
+	// SETTERS
+	// ===================================================================================
+		void Set_Ataque(int);
+		void Set_Defensa(int);
+		void Set_Energia(int);
+		void Set_Tag(char);
+		void Set_Tono(char);
+		void Set_Vidas(int);
+		void Set_X(int);
+		void Set_Y(int);
+
+	// ===================================================================================
 	// MÉTODOS
-	virtual int  Cuenta_Atras();
-	void Mover(int i, int _x, int _y);
-	void Perseguir(int _x, int _y);
+	// ===================================================================================
+	
+		/// Movimiento -------------------------------------------------------------------
+		void Mueve(int i, int, int);
+		void Mueve_Por_Ruta();
+		
+		/// Pathfinding ------------------------------------------------------------------
+		void Backtracking(int, int);
+		void Busca_Caminos(int, int);
+		
+		/// Varios -----------------------------------------------------------------------
+		virtual void Actualiza_Estado() = 0;
+		virtual bool Gestiona_Mensaje(const Mensaje&) = 0;
+		void Ver_Ruta();
+
 };
 
 #endif
