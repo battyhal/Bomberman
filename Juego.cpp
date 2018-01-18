@@ -1,116 +1,220 @@
+#include "EstadoJuego_Menu.h"
+#include "EstadoJuego_Presentacion.h"
+#include "EstadoJuego_Pausa.h"
+#include "EstadoJuego_GameOver.h"
 #include "Juego.h"
 
-Juego::Juego() : bomba(NULL), Bomberman(NULL), mapa(Mapa()), salir(false), turnos(0)
+Juego::Juego():bomba_(NULL), Bomberman_(NULL),
+estadoActual_(Presentacion::Get_Instancia()), mapa_(Mapa::Instancia()),
+maquinaEstados_(new Maquina_Estados_Juego), salir_(false), turnos_(0)
 {
-	//mapa.Dibujar_Marco();
+	maquinaEstados_->Incluir_Estado(Presentacion::Get_Instancia());
 }
 
-Juego::Juego(std::string nivelTxt) : bomba(NULL), Bomberman(NULL), mapa(Mapa(nivelTxt)), 
-									 salir(false), turnos(0) {}
+Juego::Juego(std::string nivelTxt):bomba_(NULL), Bomberman_(NULL),
+estadoActual_(Presentacion::Get_Instancia()), mapa_(Mapa::Instancia()),
+maquinaEstados_(NULL), salir_(false), turnos_(0){}
 
-Juego::~Juego() 
+Juego& Juego::operator=(const Juego& otro)
 {
-	Bomberman = NULL;
-	delete Bomberman;
-	bomba = NULL;
-	delete bomba;
+	if(this != &otro)
+	{
+		bomba_ = otro.bomba_;
+		Bomberman_ = otro.Bomberman_;
+		estadoActual_ = Presentacion::Get_Instancia();
+		mapa_ = Mapa::Instancia();
+		maquinaEstados_ = otro.maquinaEstados_;
+		objetos_ = otro.objetos_;
+		salir_ = otro.salir_;
+		turnos_ = otro.turnos_;
+	}
+	return *this;
 }
 
-// ---------------------------------------------------------------
+Juego::~Juego()
+{
+	Bomberman_ = NULL;
+	delete Bomberman_;
+	bomba_ = NULL;
+	delete bomba_;
+	estadoActual_ = NULL;
+	delete estadoActual_;
+	mapa_ = NULL;
+	delete mapa_;
+	maquinaEstados_ = NULL;
+	delete maquinaEstados_;
+}
+
+// =======================================================================================
 // GETTERS
-// ---------------------------------------------------------------
-bool Juego::Get_Salir() const { return salir; }
-
-// ---------------------------------------------------------------
-// MÉTODOS
-// ---------------------------------------------------------------
-void Juego::Actualizar()
+// =======================================================================================
+Juego* Juego::Get_Instancia()
 {
-	// Si hay una bomba se comprueba el tiempo de vida
-	/*if(bomba)
+	static Juego instancia;
+	return& instancia;
+}
+Maquina_Estados_Juego* Juego::Get_Maquina_Estados(){ return maquinaEstados_; }
+bool Juego::Get_Salir() const { return salir_; }
+std::list<Objeto*> Juego::Get_Objetos() const { return objetos_; }
+
+// =======================================================================================
+// MÉTODOS
+// =======================================================================================
+void Juego::Actualiza()
+{
+	// Comprobar colisiones del jugador con Bombas y/o enemigos si hay + de 1 elemento
+	if(objetos_.size() > 1)
 	{
-		bomba->Cuenta_Atras();
-	}*/
-	// Comprobar colisiones del jugador con Bombas y/o enemigos
-	for(Obj = objetos.begin(); Obj != objetos.end(); Obj++)
-	{
-		for(Obj2 = Obj; Obj2 != objetos.end(); Obj2++)
-		{			
-			// Si hay 2 objetos en la misma posición
-			if((*Obj)->Get_X() == (*Obj2)->Get_X() && (*Obj)->Get_Y() == (*Obj2)->Get_Y())
+		for (auto Obj = objetos_.begin(); Obj != objetos_.end(); Obj++)
+		{
+			for (auto Obj2 = Obj; Obj2 != objetos_.end(); Obj2++)
 			{
-				// Si tienen el mismo nombre no se hace nada
-				if((*Obj)->Get_Nombre() == (*Obj2)->Get_Nombre())
-					continue;
-				// Si no : se le quita 1 vida al objeto que sea
-				(*Obj)->Set_Vidas(-1);
-				(*Obj2)->Set_Vidas(-1);
-			}
-			// Comprobar si los objetos están vivos (menos Bomberman) y si no lo están borrarlos
-			if((*Obj)->Get_Nombre() != "Bomberman")
-			{
-				if((*Obj)->Get_Vidas() == 0)
+				//(*Obj)->Actualiza_Estado();
+				//(*Obj2)->Actualiza_Estado();
+				// Si hay 2 objetos en la misma posición
+				if ((*Obj)->Get_X() == (*Obj2)->Get_X() && (*Obj)->Get_Y() == (*Obj2)->Get_Y())
 				{
-					delete(*Obj);
-					Obj = objetos.erase(Obj);
-					Bomberman->Set_Puntos(10);
+					// Si entra en un portal
+					if ((*Obj)->Get_X() == mapa_->Get_Portales(0, 'x') &&
+						(*Obj)->Get_Y() == mapa_->Get_Portales(0, 'y'))
+					{
+						// Aparece al lado del portal
+						(*Obj)->Set_X(mapa_->Get_Portales(1, 'x') + 1);
+						(*Obj)->Set_Y(mapa_->Get_Portales(1, 'y'));
+					}
+					else if ((*Obj)->Get_X() == mapa_->Get_Portales(1, 'x') &&
+						(*Obj)->Get_Y() == mapa_->Get_Portales(1, 'y'))
+					{
+						// Aparece al lado del portal
+						(*Obj)->Set_X(mapa_->Get_Portales(0, 'x') + 1);
+						(*Obj)->Set_Y(mapa_->Get_Portales(0, 'y'));
+					}
+
+					// Si tienen el mismo nombre no se hace nada
+					if ((*Obj)->Get_Nombre() == (*Obj2)->Get_Nombre())
+						continue;
+					// Si no : se le quita 1 vida al objeto que sea
+					(*Obj)->Set_Vidas(-1);
+					(*Obj2)->Set_Vidas(-1);
 				}
-			}
-			if((*Obj2)->Get_Nombre() != "Bomberman")
-			{
-				if((*Obj2)->Get_Vidas() == 0)
+				// Si los objetos no están vivos (menos Bomberman_) se borran
+				if ((*Obj)->Get_Nombre() != "Bomberman_")
 				{
-					delete(*Obj2);
-					Obj2 = objetos.erase(Obj2);
-					Bomberman->Set_Puntos(10);
+					if ((*Obj)->Get_Vidas() == 0)
+					{
+						delete(*Obj);
+						Obj = objetos_.erase(Obj);
+						Bomberman_->Set_Puntos(10);
+					}
+					//else Obj++;
+				}
+				if ((*Obj2)->Get_Nombre() != "Bomberman_")
+				{
+					if ((*Obj2)->Get_Vidas() == 0)
+					{
+						delete(*Obj2);
+						Obj2 = objetos_.erase(Obj2);
+						Bomberman_->Set_Puntos(10);
+					}
+					//else Obj2++;
 				}
 			}
 		}
-	}	
+	}
 }
 
-void Juego::Crear_Objetos()
+void Juego::Actualiza_Estado()
+{
+	maquinaEstados_->Actualizar();
+}
+
+void Juego::Cambia_Estado(EstadoJuego* nuevoEstado)
+{
+	maquinaEstados_->Cambiar_Estado(nuevoEstado);
+}
+
+void Juego::Elimina_Estado(EstadoJuego* estado)
+{
+	maquinaEstados_->Eliminar_Estado(estado);
+}
+
+void Juego::Incluye_Estado(EstadoJuego* estado)
+{
+	maquinaEstados_->Incluir_Estado(estado);
+}
+
+void Juego::Crea_Objetos()
 {
 	// Personaje Jugador
-	Bomberman = new Personaje(10, 10, 50, "Bomberman", 'B', 13, 2, 3, 0, "Bomba pequeña");
-	objetos.push_back(Bomberman);
-	
+	Bomberman_ = new Personaje(10, 10, 50, "Bomberman", 'B', "blanco", 13,
+							  3, 2, 0, "Bomba pequeña");
+	objetos_.push_back(Bomberman_);
+
 	// NPC´s
-	for(int i = 1; i < 3; i++)
+	NPC* orco1 = new NPC(12, 7, 60, "Orco", 'O', "marron", 1, 10, 11, 0, " ");
+	objetos_.push_back(orco1);
+	NPC* orco2 = new NPC(12, 7, 60, "Orco", 'O', "marron", 1, 12, 13, 0, " ");
+	objetos_.push_back(orco2);
+	NPC* orco3 = new NPC(12, 7, 60, "Orco", 'O', "marron", 1, 8, 10, 0, " ");
+    objetos_.push_back(orco3);
+	/*for(int i = 1; i < 3; i++)
 	{
 		switch(i)
 		{
 		case 1:
 		{
-			NPC* orco1 = new NPC(12, 7, 60, "Orco", 'O', 1, 6, 6, 0, " ");
+			NPC* orco1 = new NPC(12, 7, 60, "Orco", 'O', "marron", 1, 16,
+								 16, 0, " ");
 			objetos.push_back(orco1);
 		}
 		break;
 		case 2:
 		{
-			NPC* orco2 = new NPC(12, 7, 60, "Orco", 'O', 1, 10, 10, 0, " ");
+			NPC* orco2 = new NPC(12, 7, 60, "Orco", 'O', "marron", 1, 10,
+								 16, 0, " ");
 			objetos.push_back(orco2);
 		}
 		break;
 		}// Fin switch(i)
+	}*/
+}
+
+void Juego::Fondo_Bomberman()
+{
+	gotoxy(10, 5);
+	char fondo[][46] = {
+	" ********************************************",
+	" *                                          *",
+	" * B    O    M    B    E    R    M    A   N *",
+	" *                                          *",
+	" ********************************************",
+	};
+	for(int j = 0; j < 5; j++)
+	{
+		for(int k = 0; k < 46; k++)
+		{
+			std::cout << fondo[j][k];
+		}
+		gotoxy(10, j + 6);
 	}
 }
 
 void Juego::Game_Over()
 {
-	char gameOver[13][35] = {
-			"     .--,       .--,         ",
-			"    ( (  \\.---./  ) )        ",
-			"     '.__/o   o\\__.'         ",
-			"        {=  ^  =}            ",
-			"         >  -  <             ",
-			"        /       \\            ",
-			"       //       \\\\           ",
-			"      //|   .   |\\\\          ",
-			"      \"'\\       /'\"_.-~^`'-. ",
-			"         \\  _  /--'         `",
-			"       ___)( )(___           ",
-			"      (((__) (__)))          ",
+	char gameOver[13][35] =
+	{
+	"     .--,       .--,            ",
+	"    ( (  \\.---./  ) )          ",
+	"     '.__/o   o\\__.'           ",
+	"        {=  ^  =}               ",
+	"         >  -  <                ",
+	"        /       \\              ",
+	"       //       \\\\            ",
+	"      //|   .   |\\\\           ",
+	"     \"'\\      /'\"_.-~^`'-.   ",
+	"         \\  _ /--'         `   ",
+	"       ___)( )(___              ",
+	"      (((__) (__)))             ",
 	};
 	for(int j = 0; j < 13; j++)
 	{
@@ -122,74 +226,51 @@ void Juego::Game_Over()
 	}
 }
 
-bool Juego::Jugar()
+void Juego::Jugar()
 {
-	rlutil::hidecursor();
+	Auxiliar auxiliar;
+	auxiliar.listaObjetosAuxiliar_ = objetos_;
+	auxiliar.mapaAuxiliar_ = mapa_->Get_Matriz();
+	Fondo_Bomberman();
 	Puntuacion();
-	if(Bomberman->Get_Vidas() == 0)
+	if(Bomberman_->Get_Vidas() == 0)
 	{
-		salir = true;
+		Cambia_Estado(EstadoJuego_GameOver::Get_Instancia());
+		Actualiza_Estado();
+		salir_ = true;
 	}
 	else
 	{
-		Mover_Personaje();
-		Mover_NPC();
-		Actualizar();
-		mapa.Dibujar_Mapa(objetos);
+		Mueve_Personaje();
+		Mueve_NPC();
+		Actualiza();
+		auxiliar.Dibujar_Mapa();
 		Sleep(150);
 	}
 }
 
-void Juego::Mover_NPC()
+void Juego::Mueve_NPC()
 {
-	// Se empieza por el objeto[1] porque el objeto[0] es el jugador
-	for(Obj = objetos.begin(); Obj != objetos.end(); Obj++)
-	{	
-		// Comprobar que el objeto no es una bomba
+	for(auto Obj = objetos_.begin(); Obj != objetos_.end(); Obj++)
+	{
+		// No mover ni a Bomberman_ ni a las bombas
 		if((*Obj)->Get_Tag() != '@' && (*Obj)->Get_Tag() != 'B')
 		{
-			// Comprobar si la casilla está vacía
-			// Para ir hacia Abajo
-			if(mapa.Get_Contenido_Casilla((*Obj)->Get_X(), (*Obj)->Get_Y() + 1) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio
-				//(*Obj)->Mover(6, 0, 0); 
-			}
-			// Para ir hacia Arriba
-			else if(mapa.Get_Contenido_Casilla((*Obj)->Get_X(), (*Obj)->Get_Y() - 1) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio
-				//(*Obj)->Mover(6, 0, 0);
-			}
-			// Para ir hacia la Derecha
-			else if(mapa.Get_Contenido_Casilla((*Obj)->Get_X() + 1, (*Obj)->Get_Y()) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio				
-				//(*Obj)->Mover(6, 0, 0);
-			}
-			// Para ir hacia la Izquierda
-			else if(mapa.Get_Contenido_Casilla((*Obj)->Get_X() - 1, (*Obj)->Get_Y()) == ' ')
-			{
-				(*Obj)->Perseguir(Bomberman->Get_X(), Bomberman->Get_Y()); 
-				// Movimiento aleatorio
-				//(*Obj)->Mover(6, 0, 0);
-			}
+			// Perseguir al personaje
+			(*Obj)->Busca_Caminos(Bomberman_->Get_X(), Bomberman_->Get_Y());
 			if((*Obj)->Get_X() <= 0)
 				(*Obj)->Set_X(2);
-			if((*Obj)->Get_X() > mapa.Get_Ancho_Mapa() - 1)
-				(*Obj)->Set_X(mapa.Get_Ancho_Mapa() - 2);
+			if((*Obj)->Get_X() > mapa_->Get_Ancho_Mapa() - 2)
+				(*Obj)->Set_X(mapa_->Get_Ancho_Mapa() - 3);
 			if((*Obj)->Get_Y() <= 0)
 				(*Obj)->Set_Y(2);
-			if((*Obj)->Get_Y() > mapa.Get_Alto_Mapa() - 1)
-				(*Obj)->Set_Y(mapa.Get_Alto_Mapa() - 2);
+			if((*Obj)->Get_Y() > mapa_->Get_Alto_Mapa() - 2)
+				(*Obj)->Set_Y(mapa_->Get_Alto_Mapa() - 3);
 		}
 	}
 }
 
-void Juego::Mover_Personaje()
+void Juego::Mueve_Personaje()
 {
 	/*Funciones::Goto_XY(47 , 4);
 	std::cout << "** MOVER **\n ";
@@ -205,146 +286,65 @@ void Juego::Mover_Personaje()
 		{
 		case rlutil::KEY_DOWN:
 		{
-			// Comprobar si la casilla a la que queremos ir está dentro del mapa
-			if(Bomberman->Get_Y() + 1 < mapa.Get_Alto_Mapa())
-			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X(), Bomberman->Get_Y() + 1) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(2, 0, 0);
-				}
-				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
-			}
+			Bomberman_->Mueve(1, Bomberman_->Get_X(), Bomberman_->Get_Y());
 		}
 		break;
 		case rlutil::KEY_UP:
 		{
-			// Comprobar si la casilla a la que queremos ir está dentro del mapa
-			if(Bomberman->Get_Y() - 1 >= 0)
-			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X(), Bomberman->Get_Y() - 1) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(1, 0, 0);
-				}
-				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
-			}
-		}
-		break;
-		case rlutil::KEY_LEFT:
-		{
-			// Comprobar si la casilla a la que queremos ir está dentro del mapa
-			if(Bomberman->Get_X() - 1 >= 0)
-			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X() - 1, Bomberman->Get_Y()) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(3, 0, 0);
-				}
-				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
-			}
+			Bomberman_->Mueve(2, Bomberman_->Get_X(), Bomberman_->Get_Y());
 		}
 		break;
 		case rlutil::KEY_RIGHT:
 		{
-			// Comprobar si la casilla a la que queremos ir está dentro del mapa
-			if(Bomberman->Get_X() + 1 < mapa.Get_Ancho_Mapa())
-			{
-				// Comprobar si la casilla está vacía
-				if(mapa.Get_Contenido_Casilla(Bomberman->Get_X() + 1, Bomberman->Get_Y()) == ' ')
-				{
-					// Mover personaje
-					Bomberman->Mover(4, 0, 0);
-				}
-				// PARA HACER : PROCEDIMIENTO SI EN LA CASILLA A LA QUE SE MUEVE HAY UN NPC
-			}
+			Bomberman_->Mueve(3, Bomberman_->Get_X(), Bomberman_->Get_Y());
+		}
+		break;
+		case rlutil::KEY_LEFT:
+		{
+			Bomberman_->Mueve(4, Bomberman_->Get_X(), Bomberman_->Get_Y());
 		}
 		break;
 		case rlutil::KEY_SPACE:
 		{
-			bomba = new Bomba(1, 0, 1, "Bomba", '@', 10, Bomberman->Get_X(),
-							  Bomberman->Get_Y(), 1, 3);
-			objetos.push_back(bomba); 
+			bomba_ = new Bomba(1, 0, 1, "Bomba", '@', "verde", 10,
+							  Bomberman_->Get_X(), Bomberman_->Get_Y(), 1, 3);
+			objetos_.push_back(bomba_);
 		}
 		break;
 		case rlutil::KEY_ESCAPE:
 		{
-			salir = true;
+			salir_ = true;
+		}
+		break;
+		case rlutil::KEY_DELETE:
+		{
+			Incluye_Estado(EstadoJuego_Pausa::Get_Instancia());
+			Actualiza_Estado();
+			system("pause");
 		}
 		break;
 		default:
 		{
-			gotoxy(Bomberman->Get_X(), Bomberman->Get_Y());
+			gotoxy(Bomberman_->Get_X(), Bomberman_->Get_Y());
 			std::cout << " ERROR ";
 		}
 		break;
 		} // Fin switch(tecla)
-		//Mover_NPC();
-		
-		turnos++;
-	}
-}
-
-void Juego::Presentacion()
-{
-	char mouse_pic[13][35] = {
-	"     .--,       .--,         ",
-	"    ( (  \\.---./  ) )        ",
-	"     '.__/o   o\\__.'         ",
-	"        {=  ^  =}            ",
-	"         >  -  <             ",
-	"        /       \\            ",
-	"       //       \\\\           ",
-	"      //|   .   |\\\\          ",
-	"      \"'\\       /'\"_.-~^`'-. ",
-	"         \\  _  /--'         `",
-	"       ___)( )(___           ",
-	"      (((__) (__)))          ",
-	};
-	for(int j = 0; j < 13; j++)
-	{
-		for(int k = 0; k < 35; k++)
-		{
-			std::cout << mouse_pic[j][k];
-		}
-		std::cout << "\n";
+		turnos_++;
 	}
 }
 
 void Juego::Puntuacion()
 {
-	gotoxy(7, 4);
-	std::cout << "PUNTOS = " << Bomberman->Get_Puntos();
-	gotoxy(7, 5);
-	std::cout << "VIDAS  = " << Bomberman->Get_Vidas();
-	gotoxy(7, 6);
-	std::cout << "Turnos = " << turnos;
+	gotoxy(10, 12);
+	std::cout << "            ";
+	gotoxy(10, 13);
+	std::cout << " PUNTOS =  " << Bomberman_->Get_Puntos();
+	gotoxy(10, 14);
+	std::cout << " VIDAS  =  " << Bomberman_->Get_Vidas();
+	gotoxy(10, 15);
+	std::cout << " Turnos =  " << turnos_;
+	gotoxy(10, 16);
+	std::cout << "            ";
 }
 
-// TEMPORAL
-void Juego::dibujarMapa()
-{
-	mapa.Dibujar_Mapa(objetos);
-}
-
-void Juego::verDatosObjetos()
-{
-	int contador = 0;
-	for(Obj = objetos.begin(); Obj != objetos.end(); )
-	{
-		std::cout << "Objeto[" << contador << "].Ataque    = " << (*Obj)->Get_Ataque() << "\n";
-		std::cout << "Objeto[" << contador << "].Defensa   = " << (*Obj)->Get_Defensa() << "\n";
-		std::cout << "Objeto[" << contador << "].Energia   = " << (*Obj)->Get_Energia() << "\n";
-		std::cout << "Objeto[" << contador << "].Nombre    = " << (*Obj)->Get_Nombre() << "\n";
-		std::cout << "Objeto[" << contador << "].Tag       = " << (*Obj)->Get_Tag() << "\n";
-		std::cout << "Objeto[" << contador << "].Vidas     = " << (*Obj)->Get_Vidas() << "\n";
-		std::cout << "Objeto[" << contador << "].X         = " << (*Obj)->Get_X() << "\n";
-		std::cout << "Objeto[" << contador << "].Y         = " << (*Obj)->Get_Y() << "\n";
-		
-		contador++;
-		Obj++;
-	}
-}

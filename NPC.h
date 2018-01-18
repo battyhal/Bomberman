@@ -1,19 +1,35 @@
 #ifndef NPC_H
 #define NPC_H
 
+#include <cassert>
 #include <iostream>
 #include <vector>
+#include "Maquina_Estados_Objetos.h"
 #include "Objeto.h"
 
-class NPC : public Objeto {
+class NPC : public Objeto 
+{
 private:
-	std::vector<std::string> equipo;
+		std::vector<std::string> equipo_;
+		Maquina_Estados_Objetos<NPC>* fsmEstados_;
+
 protected:
 public:
-	NPC();
-	NPC(int _ataque, int _defensa, int _energia, std::string _nombre, char _tag, 
-		int _vidas, int _x, int _y, int _puntos, std::string _equipo);
-	~NPC();
+		NPC();
+		NPC(int, int, int, std::string, char, std::string, int, int, int, int, std::string);
+		~NPC();
+	
+	// ===================================================================================
+	// GETTERS
+	// ===================================================================================
+		Maquina_Estados_Objetos<NPC>* Get_Maquina_Estados()const;
+	
+	// ===================================================================================
+	// MÉTODOS
+	// ===================================================================================
+		virtual void Actualiza_Estado(); 
+		virtual bool Gestiona_Mensaje(const Mensaje&);
+		
 };
 
 #endif
