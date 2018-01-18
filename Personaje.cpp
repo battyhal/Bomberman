@@ -2,56 +2,59 @@
 
 Personaje::Personaje() : Objeto()
 {
-	bomba = 0;
-	equipo.push_back(" ");
-	puntos = 0;
+	bomba_ = 0;
+	equipo_.push_back(" ");
+	puntos_ = 0;
 }
 
-Personaje::Personaje(int _ataque, int _defensa, int _energia, std::string _nombre, char _tag, int _vidas, int _x, int _y, int _puntos, std::string _equipo) : Objeto(_ataque, _defensa, _energia, _nombre, _tag, _vidas, _x, _y)
+Personaje::Personaje(int _ataque, int _defensa, int _energia, 
+std::string _nombre, char _tag, std::string _tono, int _vidas,
+int _x, int _y, int _puntos, std::string _equipo):Objeto(_ataque, _defensa,
+_energia, _nombre, _tag, _tono, _vidas, _x, _y)
 {
-	bomba = NULL;
-	equipo.push_back(_equipo);
-	puntos = _puntos;
+	bomba_ = NULL;
+	equipo_.push_back(_equipo);
+	puntos_ = _puntos;
 }
 
-Personaje::~Personaje() 
+Personaje::~Personaje()
 {
-	bomba = 0;
-	delete bomba;
+	bomba_ = 0;
+	delete bomba_;
 }
 
-// ---------------------------------------------------------------
-// GETTERS 
-// ---------------------------------------------------------------
-int  Personaje::Get_Puntos() { return puntos; }
+// -----------------------------------------------------------------------
+// GETTERS
+// -----------------------------------------------------------------------
+int  Personaje::Get_Puntos() { return puntos_; }
 
-// ---------------------------------------------------------------
+// -----------------------------------------------------------------------
 // SETTERS
-// ---------------------------------------------------------------
-void Personaje::Set_Puntos(int i) { puntos += i; }
+// -----------------------------------------------------------------------
+void Personaje::Set_Puntos(int i) { puntos_ += i; }
 
-// ---------------------------------------------------------------
+// -----------------------------------------------------------------------
 // MODOS
-// ---------------------------------------------------------------
+// -----------------------------------------------------------------------
 Bomba* Personaje::Dejar_Bomba()
 {
-	bomba = new Bomba(1, 0, 1, "Bomba", '@', 10, x, y, 1, 10);
-	return bomba;
+	bomba_ = new Bomba(1, 0, 1, "Bomba", '@', "verde", 10, x_, y_, 1, 10);
+	return bomba_;
 }
 
-// --------------------------------------------------------------------------
-// VARIOS 
-// --------------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// VARIOS
+// -----------------------------------------------------------------------
 void Personaje::Mostrar_Equipo(int i)
 {
 	if(i == 0)
 	{
-		for(int j = 0; j < equipo.size(); j++)
+		for(unsigned int j = 0; j < equipo_.size(); j++)
 		{
-			std::cout << " " << j << ".- " << equipo[j] << std::endl;  
+			std::cout << " " << j << ".- " << equipo_[j] << std::endl;
 		}
 	}
-	else std::cout << " " << i << ".- " << equipo[i] << std::endl;  
+	else std::cout << " " << i << ".- " << equipo_[i] << std::endl;
 }
 
 
@@ -65,9 +68,9 @@ Problema? si descargo las de uno y son las que tiene que cargar otro
 y se cargan primero las del que tiene que cargarlo y luego se descargan
 las del que avanza, nos cargamos las que ha cargado el primero
 
-Posible solución, recorrer todos los personajes y extraer todas las regiones 
-que deben ser cargadas a una lista, coger la lista previa y descargar las 
-regiones que no estén en la lista generada, cargar las regiones de la lista 
+Posible solución, recorrer todos los personajes y extraer todas las regiones
+que deben ser cargadas a una lista, coger la lista previa y descargar las
+regiones que no estén en la lista generada, cargar las regiones de la lista
 generada que no estén en la lista cargada.
 
 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]

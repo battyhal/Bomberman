@@ -1,25 +1,24 @@
 #include "Bomba.h"
 
-Bomba::Bomba(int _ataque, int _defensa, int _energia, std::string _nombre,
-			 char _tag, int _vidas, int _x, int _y, int _radio, int _tiempo) 
-	        : Objeto(_ataque, _defensa, _energia, _nombre, _tag, _vidas, _x, _y)
+Bomba::Bomba(int at, int def, int ener, std::string nom, char t, std::string to, int vi,
+int x, int y, int rad, int ti)
+	        : Objeto(at, def, ener, nom, t, to, vi, x, y)
 {
-	radio_Accion = _radio;
-	tiempo_vida  = _tiempo;
+	fsmBomba_ = NULL;
+	radio_Accion_ = rad;
+	tiempo_vida_  = ti;
 }
 
-Bomba::Bomba(const Bomba &arg) 
+Bomba::Bomba(const Bomba &arg)
 {
-	radio_Accion = arg.radio_Accion;
-	tiempo_vida = arg.tiempo_vida;
-	
-	//return *this;
+	radio_Accion_ = arg.radio_Accion_;
+	tiempo_vida_ = arg.tiempo_vida_;
 }
 
-Bomba::~Bomba() {}
+Bomba::~Bomba() { delete fsmBomba_; }
 
 // ---------------------------------------------------------------
-// GETTERS 
+// GETTERS
 // ---------------------------------------------------------------
 
 
@@ -28,8 +27,8 @@ Bomba::~Bomba() {}
 // ---------------------------------------------------------------
 int Bomba::Cuenta_Atras()
 {
-	tiempo_vida--;
-	if(tiempo_vida == 0)
-		vidas = 0;
-	return tiempo_vida;
+	tiempo_vida_--;
+	if(tiempo_vida_ == 0)
+		vidas_ = 0;
+	return tiempo_vida_;
 }
