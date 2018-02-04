@@ -4,7 +4,7 @@ Mapa::Mapa()
 {
 	//  Como un array 2D se almacena en la memoria del ordenador como un array 1D 
 	//  se puede declarar igualmente de la forma " char matriz[alto * ancho] "
-	//  y se sigue la fórmula " y * ANCHO + x " para llegar a la casilla x, y 	  
+	//  y se sigue la fÃ³rmula " y * ANCHO + x " para llegar a la casilla x, y 	  
 	for(int j = 0; j < ANCHO; j++)
 	{
 		for(int k = 0; k < ALTO; k++)
@@ -42,8 +42,8 @@ Mapa::Mapa(std::string archivoTxt)
 		system("pause");
 		exit(1);
 	}
-	// Se crean dos cadenas que almacenarán los
-	// datos del archivo de texto línea por línea
+	// Se crean dos cadenas que almacenarÃ¡n los
+	// datos del archivo de texto lÃ­nea por lÃ­nea
 	std::string cadena;
 	std::string cadena2;
 	altoMatrizDinamica = 0;
@@ -60,7 +60,7 @@ Mapa::Mapa(std::string archivoTxt)
 		// Para saber la altura del archivo se va incrementando 1 
 		altoMatrizDinamica++;
 	}
-	// La longitud debe ser igual a la de cadena2 + 1 caracter para almacenar el último '\n'
+	// La longitud debe ser igual a la de cadena2 + 1 caracter para almacenar el Ãºltimo '\n'
 	int longitud = cadena2.length() + 1;
 	matrizDinamica = new char[longitud];
 	// strncpy se usa para copiar el contenido de cadena2 en matrizDinamica
@@ -102,7 +102,7 @@ void Mapa::Set_Casilla(int x, int y, char c)
 }
 
 // ---------------------------------------------------------------
-// MÉTODOS
+// MÃ‰TODOS
 // ---------------------------------------------------------------
 void Mapa::Dibujar_Jugador_Muerto()
 {
@@ -141,7 +141,7 @@ void Mapa::Dibujar_Mapa(std::list<Objeto*>& o)
 				{
 					if((*it)->Get_X() == k && (*it)->Get_Y() == j)
 					{
-						// Si Bomberman está muerto 
+						// Si Bomberman estÃ¡ muerto 
 						if((*it)->Get_Nombre() == "Bomberman")
 						{
 							if((*it)->Get_Vidas() == 0)
@@ -164,7 +164,7 @@ void Mapa::Dibujar_Mapa(std::list<Objeto*>& o)
 	}
 	else 
 	{
-		// Dibujar contenido matriz dinámica
+		// Dibujar contenido matriz dinÃ¡mica
 		gotoxy(20, 3);
 		for(int j = 0; j < altoMatrizDinamica; j++)
 		{
@@ -175,7 +175,7 @@ void Mapa::Dibujar_Mapa(std::list<Objeto*>& o)
 				{
 					if((*it)->Get_X() == k && (*it)->Get_Y() == j)
 					{
-						// Si Bomberman está muerto 
+						// Si Bomberman estÃ¡ muerto 
 						if((*it)->Get_Nombre() == "Bomberman")
 						{
 							if((*it)->Get_Vidas() == 0)
@@ -246,107 +246,3 @@ void showData(std::vector<std::string>& s)
 	}
 }
 
-/*
-
-0  1  2  3  4
-0 [ ][ ][ ][ ][ ]
-1 [ ][ ][ ][ ][ ]
-2 [ ][P][ ][ ][ ]
-3 [ ][ ][ ][ ][ ]
-4 [ ][ ][ ][E][ ]
-
-P: Y2,X1
-E: Y4,X3
-
-E.Y > P.Y <--- Está hacia arriba el jugador
-E.X > P.X <--- Está hacia la izquierda
-O subimos o nos movemos a la izquierda [Aleatorio : tiras aleatorio 0-100 y si sale 0-50 uno 51-100 otro]
-E.X < P.X <--- Está hacia la derecha
-O subimos o nos movemos a la derecha [Aleatorio : tiras aleatorio 0-100 y si sale 0-50 uno 51-100 otro]
-E.X == P.X <--- Está en la misma columna
-Subimos
-E.Y < P.Y <--- Está hacia abajo
-E.X > P.X <--- Está hacia la izquierda
-O bajamos o vamos a la izquierda [Aleatorio : tiras aleatorio 0-100 y si sale 0-50 uno 51-100 otro]
-E.X < P.X <--- Está hacia la derecha
-O bajamos o vamos a la derecha [Aleatorio : tiras aleatorio 0-100 y si sale 0-50 uno 51-100 otro]
-E.X == P.X <--- Está en la misma columna
-Bajamos
-E.Y == P.Y <--- Está en la misma fila
-E.X > P.X <--- Está hacia la izquierda
-Nos vamos a la izquierda
-E.X < P.X <--- Está hacia la derecha
-Nos vamos a la derecha
-E.X == P.X <--- Está en la misma columna
-Estamos encima
-
-
-
-
-/
--    	    /
-/
-X
-/
-/
-/             +
-
-
-
-0  1  2  3  4  5  6  7  8  9
-0 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-1 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-2 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-3 [ ][ ][ ][ ][ ][T][ ][ ][ ][ ]
-4 [ ][ ][ ][ ][T][T][ ][ ][P][P]
-5 [ ][ ][ ][T][T][T][ ][ ][P][P]
-6 [ ][ ][ ][T][T][T][T][ ][P][P]
-7 [T][T][T][T][T][T][T][T][T][T]
-8 [T][T][T][T][T][T][T][T][T][T]
-9 [T][T][T][T][T][T][T][T][T][T]
-
-[A][A][A]
-[A][P][A]
-[T][T][T]
-A A A A A
-\|/ \|/
-A -P- A - T
-/|\ /|\
-T T T T T
-
-
-[A][A][A][A][A][A][A][A][A][A][A]
-[A][A][A][A][A][A][A][A][A][A][A]
-[T][T][T][P][T][T][T][W][W][W][W]
-[T][T][T][T][T][T][T][T][W][W][W]
-[T][T][T][T][T][T][T][T][T][W][W]
-[T][T][T][T][T][T][T][T][T][T][T]
-
-
-
-0  1  2  3  4  5  6  7  8  9
-0 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-1 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-2 [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ]
-3 [T][W][W][W][W][W][W][W][W][W]
-4 [T][T][W][W][W][W][W][W][W][W]
-5 [T][T][T][W][W][W][W][W][W][W]
-6 [T][T][T][T][W][W][W][W][W][W]
-7 [T][T][T][T][T][T][T][W][W][W]
-8 [T][T][T][T][T][T][T][T][W][W]
-9 [T][T][T][T][T][T][T][T][T][W]
-
-* * *
-* P *
-* * *
-
-
-
-ListaCoordenadas => Aprox 100 coordenadas que representan una coordenada de zona y una de casilla cada una
-ListaEntidades => 1.000.000 Entidades (NPC, Jugadores, Árboles, etc)
-ListaRepresentable => Aquí se generan una lista de entre X e Y elementos
-
-
-
-
-*/
